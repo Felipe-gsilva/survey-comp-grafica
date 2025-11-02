@@ -86,7 +86,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Absorption: 0.231
+    - _Absorption: 0.255
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -99,7 +99,7 @@ Material:
     - _Cutoff: 0.5
     - _DarknessThreshold: 0.2
     - _DebugBounds: 0
-    - _DensitySharpness: 0.96
+    - _DensitySharpness: 1.62
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DetailScale: 3
@@ -108,7 +108,7 @@ Material:
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _Extinction: 1.5
-    - _G_Anisotropy: 0.194
+    - _G_Anisotropy: 0.229
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -125,7 +125,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Steps: 33
+    - _Steps: 110
     - _Surface: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
@@ -137,6 +137,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DarkColor: {r: 0.75, g: 0.75, b: 0.75, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _LightCol: {r: 2, g: 2, b: 2, a: 2}
+    - _LightDir: {r: 0.3213938, g: 0.76604444, b: -0.5566705, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

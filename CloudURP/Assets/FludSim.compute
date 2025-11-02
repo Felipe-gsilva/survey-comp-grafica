@@ -9,7 +9,6 @@
 #pragma kernel DivergenceKernel
 #pragma kernel PressureJacobiKernel
 #pragma kernel SubtractGradientKernel
-#pragma kernel clearKernel
 
 // Sampler for filtered sampling of 3D textures
 SamplerState sampler_linear_clamp;
@@ -239,21 +238,25 @@ void AddVelocitySourceKernel(uint3 id : SV_DispatchThreadID)
     // Use your existing noise functions to create wind turbulence
     // The different scales/offsets create 3 independent noise fields
     float3 noisePos = id * 0.1; // Scale of the noise
-    
+
     // Add time to make the noise animate
     noisePos.y += deltaTime * 0.5; 
-    
+
     float noiseX = fbm(noisePos + float3(1.5, 9.2, 5.0), 2) * 2.0 - 1.0; // range [-1, 1]
     float noiseY = fbm(noisePos + float3(7.8, 3.1, 0.7), 2) * 2.0 - 1.0;
     float noiseZ = fbm(noisePos + float3(4.3, 6.6, 2.4), 2) * 2.0 - 1.0;
-    
+
     float3 noiseVel = float3(noiseX, noiseY, noiseZ);
-    
+
+    // CORREÇÃO: leia o campo de velocidade atual a partir de velocityRead (não velocityWrite)
+    float3 prevVel = velocityRead.Load(int4(id, 0)).xyz;
+
     // Add the noise, scaled by deltaTime and a strength factor
-    float4 prev = velocityWrite[id];
-    float4 addv = float4(noiseVel * velocitySourceScale * deltaTime, 0);
-    
-    velocityWrite[id] = float4(prev.xyz + addv.xyz, 0);
+    float3 addv = noiseVel * velocitySourceScale * deltaTime;
+
+    float3 newVel = prevVel + addv;
+
+    velocityWrite[id] = float4(newVel, 0);
 }
 
 // Semi-Lagrangian advection for density
@@ -300,10 +303,14 @@ void DiffuseKernel(uint3 id : SV_DispatchThreadID)
     float initVal = initialBuffer[id];
     float val = (sumN + alpha * initVal) * rBeta;
 
-    // diffusion is rouding my clouds too much, clamp to previous value
+    // Preserve some previous high-frequency detail by interpolating
     float prev = bufferRead[id];
 
-    bufferWrite[id] = val;
+    // diffusionBlend: how strongly to apply the diffusion result (0 = keep prev, 1 = full Jacobi)
+    // You can tune this from C# by setting a uniform, for now derive a small blend from alpha (or expose param)
+    float diffusionBlend = saturate(0.5); // use 0.5 as conservative default; expose from C# if needed
+
+    bufferWrite[id] = lerp(prev, val, diffusionBlend);
 }
 
 // Sets density to zero on the boundaries
@@ -421,13 +428,4 @@ void SubtractGradientKernel(uint3 id : SV_DispatchThreadID)
     float3 vel = velocityRead.Load(int4(pos, 0)).xyz - gradient;
 
     velocityWrite[id] = float4(vel, 0.0);
-}
-
-[numthreads(8,8,8)]
-void ClearKernel(uint3 id : SV_DispatchThreadID)
-{
-    float3 size = gridSize.xyz;
-    if (!InBounds(id, size)) return;
-    // Just write zero to the 'densityWrite' texture
-    densityWrite[id] = 0.0;
 }

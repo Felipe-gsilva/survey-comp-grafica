@@ -97,7 +97,6 @@ public class FluidController : MonoBehaviour
   private int kDivergence = -1;
   private int kPressureJacobi = -1;
   private int kSubtractGradient = -1;
-  private int kClear = -1;
 
   // Cached bounds
   private Vector3 boundsMin;
@@ -205,15 +204,12 @@ public class FluidController : MonoBehaviour
     // Add velocity noise/source: write into velocityB then swap
     if (kAddVelocitySource >= 0)
     {
-      computeShader.SetFloat("velocitySourceScale", 0.5f); 
-      // read from 'velocity' and write to velocityB, then swap
       computeShader.SetTexture(kAddVelocitySource, "velocityWrite", velocityB);
-      // if kernel reads existing velocity via velocityWrite (in-place), be explicit:
       computeShader.SetTexture(kAddVelocitySource, "velocityRead", velocity);
+      // enviar posição/escala da fonte se necessário
       DispatchFull(kAddVelocitySource);
       Swap(ref velocity, ref velocityB);
     }
-
     if (projectVelocity)
     {
       ProjectVelocityField();
@@ -258,6 +254,16 @@ public class FluidController : MonoBehaviour
       computeShader.SetFloat("decayRate", decayRate);
       computeShader.SetTexture(kLifecycle, "densityWrite", densityA);
       DispatchFull(kLifecycle);
+    }
+
+    Light sun = RenderSettings.sun;
+    if (sun == null) sun = Object.FindAnyObjectByType<Light>(); // fallback
+    if (sun != null)
+    {
+      Vector3 sunDir = -sun.transform.forward;
+      rayMarchMaterial.SetVector("_LightDir", sunDir);
+      rayMarchMaterial.SetColor("_LightCol", sun.color * sun.intensity);
+      rayMarchMaterial.SetFloat("_gAnisotropy", gAnisotropy);
     }
 
     // 6. Update material
@@ -327,7 +333,6 @@ public class FluidController : MonoBehaviour
     kDivergence   = SafeFind("DivergenceKernel");
     kPressureJacobi = SafeFind("PressureJacobiKernel");
     kSubtractGradient = SafeFind("SubtractGradientKernel");
-    kClear = SafeFind("ClearKernel");
   }
 
   int SafeFind(string kernel)
@@ -410,15 +415,11 @@ public class FluidController : MonoBehaviour
     };
     densitySource = new RenderTexture(desc);
     densitySource.wrapMode = TextureWrapMode.Clamp;
-    densitySource.filterMode = FilterMode.Bilinear;
+    densitySource.filterMode = FilterMode.Point;
     densitySource.enableRandomWrite = true;
     densitySource.Create();
 
-    if (kClear >= 0)
-    {
-      computeShader.SetTexture(kClear, "densityWrite", densitySource);
-      DispatchFull(kClear);
-    }
+    
 
     if (kInject >= 0)
     {

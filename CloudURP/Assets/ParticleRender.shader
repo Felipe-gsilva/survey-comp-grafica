@@ -12,6 +12,9 @@ Shader "Custom/RayMarchShader"
         _G_Anisotropy ("Anisotropy (g)", Range(-0.9, 0.9)) = 0.4     // Controlled by C#
         
         _DebugBounds ("Debug Bounds", Int) = 0
+
+        _LightDir ("Main Light Direction", Vector) = (0, -1, 0, 0)
+        _LightCol ("Main Light Color", Color) = (1, 1, 1, 1)
     }
     SubShader
     {
@@ -57,6 +60,8 @@ Shader "Custom/RayMarchShader"
                 float  _DensitySharpness; // Now a uniform
                 float  _G_Anisotropy;     // Now a uniform
                 int    _DebugBounds;
+                float4 _LightDir;
+                float4 _LightCol;
             CBUFFER_END
             
             // Shared density threshold
@@ -167,10 +172,8 @@ Shader "Custom/RayMarchShader"
                 float3 rd = normalize(input.positionWS - ro);
                 
                 // Get main light (sun)
-                Light mainLight = GetMainLight();
-                float3 lightDir = mainLight.direction;
-                float3 lightColor = mainLight.color;
-
+                float3 lightDir = _LightDir;
+                float3 lightColor = _LightCol.rgb;
                 float t0, t1;
                 if (!RayBox(ro, rd, _BoundsMin, _BoundsMin + _BoundsSize, t0, t1))
                 {
