@@ -196,32 +196,6 @@ Onde
 
 Uma abordagem comum é o método de \textbf{\textit{ray marching}}, onde um raio é lançado através do volume e amostras são coletadas ao longo do caminho do raio. Essas amostras são então usadas para calcular a cor e a opacidade do pixel correspondente na imagem final.
 
-\subsubsection{Interação da luz com volumes}
-
-Vamos tratar dos fenomenos físicos descritos pela equação de rendering volumétrico, passando por absorção, emissão e espalhamento e como eles podem ser implementados em um sistema de ray marching.
-
-\begin{itemize}
-  \item Absorção: A luz é absorvida pelo meio, reduzindo sua intensidade. Isso é descrito pela lei de Beer-Lambert:
-  $$
-  I(t) = I_0 e^{-\int_{0}^{t} \sigma_a(s) ds}
-  $$
-  onde $I(t)$ é a intensidade da luz no ponto $t$, $I_0$ é a intensidade inicial, e $\sigma_a(s)$ é o coeficiente de absorção no ponto $s$.
-  
-  \item Emissão: O meio pode emitir luz, contribuindo para a intensidade total. A contribuição da emissão pode ser modelada como:
-  $$
-  L_{emit}(t) = \int_{0}^{t} j(s) e^{-\int_{s}^{t} \sigma_a(u) du} ds
-  $$
-  onde $j(s)$ é a taxa de emissão no ponto $s$.
-  
-  \item Espalhamento: A luz pode ser espalhada em diferentes direções ao interagir com o meio. O espalhamento pode ser descrito pela função de fase $p(\omega', \omega)$, que define a probabilidade de um raio de luz ser espalhado da direção $\omega'$ para a direção $\omega$. A contribuição do espalhamento pode ser modelada como:
-  $$
-  L_{scatter}(t) = \int_{0}^{t} \sigma_s(s) \int_{S^2} p(\omega', \omega) L(s, \omega') d\omega' e^{-\int_{s}^{t} \sigma_a(u) du} ds
-  $$
-  onde $\sigma_s(s)$ é o coeficiente de espalhamento no ponto $s$, e $L(s, \omega')$ é a radiância incidente na direção $\omega'$ no ponto $s$ \cite{Kajiya1984}.
-\end{itemize}
-
-Todas essas técnicas se acumulam na equação de rendering volumétrico expressa no inicio da seção \ref{sec:shading}. A implementação das técnicas de solução numérica pode variar dependendo do contexto específico e dos requisitos de desempenho e qualidade visual, mas o objetivo geral é capturar a complexidade da interação da luz com volumes de maneira eficiente e realista, mantendo a precisão física e sem fritar o seu chip gráfico.
-
 \subsubsection{Implementação básica de ray marching}
 Trataremos agora de uma implementação básica de ray marching para volumes, que incorpora os conceitos de absorção, emissão e espalhamento discutidos anteriormente. 
 Essa implementação envolve o lançamento de um raio através do volume e a amostragem da densidade e outras propriedades do volume ao longo do caminho do raio. O código a seguir ilustra uma implementação do comportamento esperado:
