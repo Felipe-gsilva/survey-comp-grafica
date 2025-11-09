@@ -13,45 +13,45 @@ public class FluidController : MonoBehaviour
   [Header("Simulation Settings")]
   public ComputeShader computeShader;
 
-  public Vector3Int gridSize = new Vector3Int( 128, 64, 128);
+  public Vector3Int gridSize = new Vector3Int( 128, 96, 128);
 
   [Tooltip("Constant diffusion rate (small value ~0.02 - 0.1).")]
-  public float diffusionRate = 0.05f;
+  public float diffusionRate = 0.03f;
   [Tooltip("Jacobi iterations for diffusion (more = smoother but slower).")]
-  public int diffusionIterations = 15;
+  public int diffusionIterations = 18;
   [Tooltip("Blend factor between pure advection and diffusion (0 = pure advection, 1 = pure diffusion).")]
   [Range(0f, 1f)]
-  public float diffusionBlend = 0.5f;
+  public float diffusionBlend = 0.4f;
 
   [Tooltip("Density decay rate over time (0 = no decay, 1 = fast decay).")]
   [Range(0f, 1f)]
-  public float decayRate = 0.5f;
+  public float decayRate = 0.35f;
 
   [Header("Pressure Projection")]
   public bool projectVelocity = true;
   [Tooltip("Jacobi iterations for pressure solve (divergence-free enforcement).")]
   [Range(0, 100)]
-  public int pressureIterations = 30;
+  public int pressureIterations = 40;
   [Tooltip("Grid cell size used for divergence/gradient (world units).")]
   public float cellSize = 1f;
 
   [Header("Velocity Init / Sources")]
-  public Vector3 initialVelocity = new Vector3(0, 0.25f, 0);
+  public Vector3 initialVelocity = new Vector3(0, 0.10f, 0);
   [Header("Wind")]
   [Tooltip("Direção e força globais do vento.")]
   public Vector3 windDirection = new Vector3(1.0f, 0.0f, 0.0f);
   [Tooltip("Multiplicador para a força do vento.")]
   [Range(0f, 10f)]
-  public float windStrength = 1.0f;
+  public float windStrength = 0.3f;
 
   [Tooltip("Amortecimento da velocidade (0.99 = leve, 0.9 = forte).")]
   [Range(0.9f, 1.0f)]
-  public float velocityDamping = 0.99f;
+  public float velocityDamping = 0.995f;
 
 
   [Header("Generic Source (Prebaked)")]
   public bool addConstantSource = true;
-  public float sourceScale = 1.0f;
+  public float sourceScale = 0.6f;
 
 
   [Tooltip("Time in seconds for source injection cycle (high = slower cycle)")]
@@ -62,26 +62,30 @@ public class FluidController : MonoBehaviour
 
   [Tooltip("Number of cloud spheres to generate")]
   [Range(1, 500)]
-  public int cloudCount = 99;
+  public int cloudCount = 36;
 
   [Tooltip("Radius of each cloud sphere")]
   [Range(5f, 40f)]
-  public float cloudRadius = 15f;
+  public float cloudRadius = 18f;
 
   [Header("Rendering")]
   public Material rayMarchMaterial;
   public MeshRenderer volumeRenderer;
   [Range(0.1f, 5.0f)]
-  public float densitySharpness = 1.0f;
+  public float densitySharpness = 2.5f;
   [Range(4, 256)]
-  public int rayMarchSteps = 64;
-  public Color cloudColor = new Color(1.0f, 1.0f, 0.98f);
-  public Color darkCloudColor = new Color(0.75f, 0.75f, 0.75f); // Mais claro para evitar bordas pretas
+  public int rayMarchSteps = 96;
+  public Color cloudColor = new Color(1.0f, 1.0f, 1.0f);
+  public Color darkCloudColor = new Color(0.85f, 0.85f, 0.85f); // Mais claro para evitar bordas pretas
 
   [Range(0f, 2f)]
-  public float absorption = 0.5f;
+  public float absorption = 0.35f;
 
   public bool debugBounds = false;
+
+  [Header("Auto Apply Recommended (Optional)")]
+  [Tooltip("If enabled, overrides current component values & cube transform with recommended realistic cloud settings on Awake.")]
+  public bool applyRecommendedDefaults = false;
 
   // Internal RenderTextures
   private RenderTexture densityA, densityB;
@@ -122,6 +126,42 @@ public class FluidController : MonoBehaviour
       Debug.LogError("ComputeShader not assigned.", this);
       enabled = false;
       return;
+    }
+
+    // Optionally override current inspector values for a consistent starting point
+    if (applyRecommendedDefaults)
+    {
+      // Simulation tuning
+      gridSize = new Vector3Int(128, 96, 128);
+      diffusionRate = 0.025f;
+      diffusionIterations = 20;
+      diffusionBlend = 0.35f;
+      decayRate = 0.30f;
+      pressureIterations = 48;
+      cellSize = 1f;
+      initialVelocity = new Vector3(0f, 0.05f, 0f);
+      windDirection = new Vector3(1f, 0f, 0f);
+      windStrength = 0.25f;
+      velocityDamping = 0.997f;
+      addConstantSource = true;
+      sourceScale = 0.8f;
+      cloudCount = 60;
+      cloudRadius = 22f;
+
+      // Rendering tuning
+      densitySharpness = .5f;
+      rayMarchSteps = 128;
+      cloudColor = new Color(1f, 1f, 1f);
+      darkCloudColor = new Color(0.8f, 0.8f, 0.8f);
+      absorption = .04f;
+      debugBounds = false;
+
+      // Recommended physical volume size (world units)
+      if (volumeRenderer)
+      {
+        var t = volumeRenderer.transform;
+        t.localScale = new Vector3(200f, 100f, 200f);
+      }
     }
 
     Allocate3DTexture(ref densityA, RenderTextureFormat.RFloat, TextureWrapMode.Repeat);
