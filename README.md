@@ -1,6 +1,6 @@
 # Survey sobre computação gráfica e física
 
-Este projeto consiste em um survey preparado para a disciplica de Computação Gráfica da Unesp de Rio Preto, ministrada pelo [Professor Dr. Guilherme Freire](https://scholar.google.com.br/citations?user=aEdyqX8AAAAJ&hl=pt-BR). O objetivo do survey é apresentar uma visão geral sobre os principais tópicos relacionados à computação gráfica e física, incluindo técnicas, algoritmos e aplicações, assim como estudos de caso correlacionados e que julgou-se relevante tanto para o escopo como para o tempo do trabalho. 
+Este projeto consiste em um survey preparado para a disciplica de Computação Gráfica da Unesp de Rio Preto, ministrada pelo [Professor Dr. Guilherme Freire](https://scholar.google.com.br/citations?user=aEdyqX8AAAAJ&hl=pt-BR). O objetivo do survey é apresentar uma visão geral sobre os principais tópicos relacionados à computação gráfica e física, incluindo técnicas, algoritmos e aplicações, assim como estudos de caso correlacionados e que julgou-se relevantes tanto para o escopo como para o tempo do trabalho. 
 
 O trabalho foi realizado por:
 - Carlos Eduardo Nogueira Silva
